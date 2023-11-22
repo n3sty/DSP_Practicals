@@ -26,14 +26,17 @@ def opdracht_1(indices):
     
     return 0
 
+def opdracht_2(indices):
+    return 0
+
 def main():
 
     size = 10
 
     indices = np.arange(-size, size + 1)
     
-    opdracht_1(indices)
-    
+    # opdracht_1(indices)
+    opdracht_2(indices)
     
     return 0
 
