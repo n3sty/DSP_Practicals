@@ -1,9 +1,3 @@
----
-title: Digital Signal Processing
-author: Roy Lamain & Job Siemerink
-date: 22/11/2023
----
-
 # Digital Signal Processing
 
 De repository voor alle code die tijdens de practica van DSP gemaakt zal worden.
