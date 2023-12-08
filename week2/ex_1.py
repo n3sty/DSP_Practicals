@@ -1,5 +1,4 @@
 from scipy import signal 
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
@@ -46,3 +45,5 @@ PlotImpStepAmp(vgl1)
 PlotImpStepAmp(vgl2)
 
 plt.show()
+
+## Dit zijn beide IIR filters, aangezien de output afhankelijk is van de vorige waarde van zichzelf.
