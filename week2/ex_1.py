@@ -1,5 +1,4 @@
 from scipy import signal 
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
@@ -13,7 +12,7 @@ def PlotImpStepAmp(vgl):
     system = signal.TransferFunction(vgl[0], vgl[1], dt=1)
     t_imp, y_imp = signal.dimpulse(system, n=50)
     t_step, y_step = signal.dstep(system, n=80)
-    w, H = signal.dfreqresp(system, n=100)
+    w, H = signal.freqz(vgl[0], vgl[1])
 
 
 
@@ -33,9 +32,7 @@ def PlotImpStepAmp(vgl):
     plt.ylabel('Step response')
 
     ax = plt.subplot(gs[:, 1])
-    plt.plot(w, H.real, 'C2', alpha=0.5, label='real')
-    plt.plot(w, H.imag, 'C3', alpha=0.5, label='imag')
-    plt.plot(w, abs(H), 'C1', label='sum')
+    plt.plot(w, abs(H), 'C1', label='Magnitude')
 
     plt.legend()
     plt.xlabel('Radians/sample')
@@ -46,3 +43,5 @@ PlotImpStepAmp(vgl1)
 PlotImpStepAmp(vgl2)
 
 plt.show()
+
+## Dit zijn beide IIR filters, aangezien de output afhankelijk is van de vorige waarde van zichzelf.
