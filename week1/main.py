@@ -104,9 +104,9 @@ def opdracht_4():
 
 def main():
         
-    # opdracht_1()
-    # opdracht_2()
-    # opdracht_3()
+    opdracht_1()
+    opdracht_2()
+    opdracht_3()
     opdracht_4()
 
     plt.show()
