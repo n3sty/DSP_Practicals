@@ -5,13 +5,7 @@ import numpy as np
 
 
 def DiscreteFunc(vals):
-    
-    x = np.zeros(200)
-    
-    for n in vals:
-        x[n] = np.sin(2*np.pi*n/60)
-    
-    return x
+    return np.sin(2*np.pi*vals/60)
 
 
 def SignalTest(alpha, input=None):
