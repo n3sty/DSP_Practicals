@@ -8,17 +8,12 @@ plt.style.use("ggplot")
 
 vgl1 = ([1.0], [1.0, -1.5, 0.85])
 vgl2 = ([1.0, -1.90210, 1.0], [1.0, -1.85230, 0.94833])
-vgl3 = ([1.0, 1.0], [1.0, -1.85230, 0.94833])
 
 def PlotImpStepAmp(vgl):
     system = signal.TransferFunction(vgl[0], vgl[1], dt=1)
     t_imp, y_imp = signal.dimpulse(system, n=50)
     t_step, y_step = signal.dstep(system, n=80)
-<<<<<<< HEAD
-    w, H = signal.dfreqresp(system, n=250)
-=======
     w, H = signal.freqz(vgl[0], vgl[1])
->>>>>>> 501c92198db4b128ff316e08b923897922f55e7d
 
 
 
@@ -38,23 +33,16 @@ def PlotImpStepAmp(vgl):
     plt.ylabel('Step response')
 
     ax = plt.subplot(gs[:, 1])
-<<<<<<< HEAD
-    plt.plot(w, H.real, 'C2', alpha=0.5, label='real')
-    plt.plot(w, H.imag, 'C3', alpha=0.5, label='imag')
-    plt.plot(w, np.abs(H), 'C1', label='sum')
-=======
-    plt.plot(w, abs(H), 'C1', label='Magnitude')
->>>>>>> 501c92198db4b128ff316e08b923897922f55e7d
+    plt.plot(w, abs(H), 'C2', label='Magnitude')
 
     plt.legend()
     plt.xlabel('Radians/sample')
     plt.ylabel('Magnitude')
 
 
-# PlotImpStepAmp(vgl1)
+PlotImpStepAmp(vgl1)
 PlotImpStepAmp(vgl2)
-PlotImpStepAmp(vgl3)
 
 plt.show()
 
-## Dit zijn beide IIR filters, aangezien de output afhankelijk is van de vorige waarde van zichzelf.
+## De filter van vergelijking 1 is een 
