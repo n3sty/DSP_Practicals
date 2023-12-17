@@ -2,8 +2,7 @@ import numpy as np
 
 
 def Indices(n):
-    return np.arange(-n , n + 1)
-
+    return np.arange(-n , n)
 
 def Step(n, n0=0):
     
@@ -17,6 +16,12 @@ def Step(n, n0=0):
 
     return out
 
+
+def DiscStep(n):
+    if n >= 0 :
+        return 1
+    else:
+        return 0
 
 def Delta(n, n0=0):
 
