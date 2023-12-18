@@ -1,47 +1,99 @@
-from scipy import signal
 import numpy as np
+import func
 import matplotlib.pyplot as plt
+from scipy import signal
 
+def Impulse(n):
+    return func.Delta(n)
 
+def Step(n):
+    return func.Step(n)
 
-def FFTConvolve(IN1, IN2):
+def Custom(n):
+    x = []
     
-    y = signal.fftconvolve(IN1, IN2, 'same')
+    for i in n:
+        x.append(np.sin(2*np.pi*i/60) + np.sin(2*np.pi*i/10))
+    
+    return x
+
+
+def Convolution(input:callable, n:np.ndarray, M:int):
+    
+    walkingMean = np.ones(M)/M
+    
+    y = np.convolve(input(n), walkingMean, mode='same')
     
     return y
 
 
-def DiracDelta(x, offset:int=0):
+def opdracht_3a():
     
-    val = np.zeros_like(x)
-    val[x==offset] = 1
-    
-    return val
-
-
-def plot(x:np.ndarray, y:np.ndarray):
+    yData = Convolution(Impulse, n, M)
     
     plt.figure()
-    plt.plot(x, y)
-    plt.title("Walking Mean")
+    plt.stem(n, yData)
     
-    return 0
+    return yData
+
+
+def opdracht_3b():
+    
+    num = np.ones(M)/M
+    den = [1]
+    
+    return num, den
+
+
+def opdracht_3c():
+    
+    imp = Convolution(Impulse, n, M)
+    plt.figure()
+    plt.subplot(211)
+    plt.stem(imp)
+    
+    step = Convolution(Step, n, M)
+    plt.subplot(212)
+    plt.stem(step)
+    
+    return
+    
+
+def opdracht_3d(num, den):
+    
+    freqs, H = signal.freqz(num, den)
+    
+    plt.figure()
+    plt.stem(freqs, np.abs(H))
+    
+    return
+
+
+def opdracht_3f(num, den):
+    
+    yData = signal.lfilter(num, den, Custom(n))
+    
+    plt.figure()
+    plt.stem(yData)
+    
+    return yData
 
 
 def main():
+    global n, M
     
-    M = 50
-    length = 2*M
-    xRange = np.arange(0, length)
+    n = func.Indices(40)
+    M = 10
     
-    IN1 = DiracDelta(xRange, length/2)
-    IN2 = np.ones(M)/M
-
-    plot(xRange, FFTConvolve(IN1, IN2))
+    opdracht_3a()
+    num, den = opdracht_3b()
+    opdracht_3c()
+    opdracht_3d(num, den)
+    opdracht_3f(num, den)
+    
     
     plt.show()
-
-        
+    
     return 0
 
 

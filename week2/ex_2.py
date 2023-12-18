@@ -21,7 +21,7 @@ def SignalTest(alpha, input=None):
     # Give the figure a distinguishable title
     plt.figure(f'With alpha: {alpha}')
     
-    if input != None:
+    if type(input) != type(None):
         gc = gridspec.GridSpec(2, 3, hspace=0)
     else:
         gc = gridspec.GridSpec(2, 2, hspace=0)
@@ -52,7 +52,7 @@ def SignalTest(alpha, input=None):
     plt.ylabel('Amplitude')
     
     # Plot the output of the system with a given input
-    if input != None:
+    if type(input) != type(None):
         plt.subplot(gc[:, 2])
         plt.title('Response with a given input')
         y_out = signal.lfilter(num, den, DiscreteFunc(input))
@@ -69,7 +69,7 @@ def main():
     response of the signal.
     """
 
-    for alpha in range(5, 10, 1):
+    for alpha in range(5, 9, 1):
         SignalTest(alpha/10)
     
     SignalTest(0.9, np.arange(0, 200, dtype=int))

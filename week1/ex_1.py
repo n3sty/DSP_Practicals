@@ -6,6 +6,11 @@ PI = np.pi
 
 
 def main():
+    """
+    The main function plots four different stem plots using different harmonical functions.
+    :return: The function main() is returning nothing.
+    """
+
     plt.figure("Opdracht 1")
     plt.subplot(221)
     indices = func.Indices(10)
@@ -27,7 +32,7 @@ def main():
     yData = np.cos((PI*indices) / 15 + 0.25*PI) + 0.5*np.cos((5*PI*indices)/30 - 0.3*PI)
     plt.stem(indices, yData)
     
-    return 0
+    return
 
 
 

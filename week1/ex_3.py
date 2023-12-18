@@ -5,8 +5,11 @@ import func
 PI = np.pi
 
 def main():
-    plt.figure("Opdracht 3")
-    plt.title("Plots bij opdracht 3")
+    """
+    The main function plots different stem plots for various mathematical functions.
+    :return: The function `main()` does not explicitly return anything.
+    """
+    plt.figure("Plots bij opdracht 3")
 
     # a
     plt.subplot(231)
@@ -44,7 +47,7 @@ def main():
     yData = 1/(2j) * (np.exp((1j*2*PI*indices) / 24) - np.exp((-1j*2*PI*indices) / 24))
     plt.stem(indices, yData)
 
-    return 0
+    return
 
 
 if __name__ == "__main__":

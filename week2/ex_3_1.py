@@ -29,8 +29,8 @@ def main():
     
     M = 10
     length = 2*M
-    dt = 0.1
-    xRange = np.arange(length)
+    dt = 1
+    xRange = np.arange(-length, length)
     
     tf = TransferFunction(xRange, M, dt)
         
