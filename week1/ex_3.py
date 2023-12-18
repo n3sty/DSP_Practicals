@@ -2,14 +2,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import func
 
+# Constantes verklaren
 PI = np.pi
 
 def main():
     """
-    The main function plots different stem plots for various mathematical functions.
-    :return: The function `main()` does not explicitly return anything.
+    Verschillende plots van verschillende digitale signalen. Zie voor de exacte signaalbeschrijvingen het dictaat.
+    De numpy module is erg handig voor wiskunde-gerelateerde handelingen, np.exp(x) is equivalent aan 'e^(x)'.
+    
+    Bij deze plots zijn assenlabels niet toegevoegd, om rommelige plots en onleesbaarheid te voorkomen. 
+    Op elke x-as zijn de samples ('n') weergegeven, en op elke y-as de corresponderende grootte van de functie ('x[n]').
+    
+    :return: None
     """
-    plt.figure("Plots bij opdracht 3")
+    plt.figure("Opdracht 3")
+
 
     # a
     plt.subplot(231)

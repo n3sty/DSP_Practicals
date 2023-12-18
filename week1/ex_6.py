@@ -2,11 +2,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import func
 
+# Constantes verklaren
 PI = np.pi
 
 
 def processor(n, x, sign=1):
+    """
+        Neemt een aantal samples (n) en een inputsignaal (x[n]) en berekent vervolgens y[n].
+        
+        De processor volgens de voorgeschreven waarden, de 'sign' parameter is om het uitvoeren van opdracht 6f makkelijker te maken
+        toegevoegd, hiermee kan het teken van de functie gemakkelijk worden omgedraaid.
+        
+        :returns: y_data: de respons van de functie bij een input x[n]
+    """
     
+    # np.zeros geeft een lijst gevuld met nullen, die vervolgens met 'list comprehension' vervangen kunnen worden door
+    # bedoelde waardes.
     index = 0
     y_data = np.zeros(len(n))
     
@@ -21,6 +32,8 @@ def processor(n, x, sign=1):
     
     return y_data
 
+
+# Een aantal verschillende signalen als input en hun bijbehorende respons van de processor.
 def opdrachtA():
     
     def input(n):
@@ -30,10 +43,11 @@ def opdrachtA():
     
     yData = processor(n, input(n))
     
-    plt.figure("Opdracht A")
+    plt.subplot(231)
+    plt.title('6a')
     plt.stem(n, yData)
     
-    return 0
+    return n, yData
 
 def opdrachtB():
     
@@ -44,11 +58,11 @@ def opdrachtB():
     
     yData = processor(n, input(n))
     
-    plt.figure("Opdracht B")
+    plt.subplot(232)
+    plt.title('6b')
     plt.stem(n, yData)
     
-    
-    return 0
+    return n, yData
 
 def opdrachtC():
     
@@ -59,10 +73,11 @@ def opdrachtC():
         
     yData = processor(n, input(n))
     
-    plt.figure("Opdracht C")
+    plt.subplot(233)
+    plt.title('6c')
     plt.stem(n, yData)    
     
-    return 0
+    return n, yData
 
 def opdrachtD():
     
@@ -73,12 +88,13 @@ def opdrachtD():
     
     yData = processor(n, input(n))
     
-    plt.figure("Opdracht D")
+    plt.subplot(234)
+    plt.title('6d')
     plt.stem(n, yData)
     
     print(f'De functie convergeert rond: {yData[-1]}')
     
-    return 0
+    return n, yData
 
 def opdrachtE():
     
@@ -89,10 +105,11 @@ def opdrachtE():
     
     yData = processor(n, input(n))
     
-    plt.figure("Opdracht E")
+    plt.subplot(235)
+    plt.title('6e')
     plt.stem(n, yData)
     
-    return 0
+    return n, yData
 
 def opdrachtF():
     
@@ -103,12 +120,19 @@ def opdrachtF():
     
     yData = processor(n, input(n), sign=-1)
     
-    plt.figure("Opdracht F")
+    plt.subplot(236)
+    plt.title('6f')
     plt.stem(n, yData)
+    
+    return n, yData
 
 
 def main():
+    """
+        main() plot alle verkregen signalen in 1 venster. Wederom is gekozen om de assenlabels weg te laten, op de x-as zijn telkens
+        de samples ('n') weergegeven, en op de y-as de groottes op die samplepunten ('x[n]').
     
+    """
     opdrachtA()
     opdrachtB()
     opdrachtC()

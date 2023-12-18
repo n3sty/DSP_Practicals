@@ -2,6 +2,14 @@ import numpy as np
 import func
 import matplotlib.pyplot as plt
 
+"""
+!!! MEDEDELING !!!
+
+Deze opdracht is niet gelukt, het script geeft helaas een error wanneer deze uitgevoerd wordt.
+"""
+
+
+# Constantes verklaren
 PI = np.pi
 
 def vraagA():
@@ -46,16 +54,16 @@ def vraagB(data_A):
         
                 
     
-    # plt.figure()
+    plt.figure()
     
-    # for n in N:
-    #     omega = 2*PI*m/n
-    #     yData = np.cos(omega*indices)
+    for n in N:
+        omega = 2*PI*m/n
+        yData = np.cos(omega*indices)
         
-    #     plt.stem(indices, yData, colours[o])
-    #     o += 1
+        plt.stem(indices, yData, colours[o])
+        o += 1
         
-    # plt.legend(colours)
+    plt.legend(colours)
     
     plt.show()
 

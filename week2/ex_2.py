@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 
-
-def DiscreteFunc(vals):
-    return np.sin(2*np.pi*vals/60)
+# 
+def DiscreteFunc(n):
+    return np.sin(2*np.pi*n/60)
 
 
 def SignalTest(alpha, input=None):

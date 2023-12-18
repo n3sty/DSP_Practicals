@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Declaring constants
 PI = np.pi
 
 
 # The class "functions" contains two functions, "simple" and "euler", which return lists of numbers
 # and their corresponding values.
-class functions():
+class functions:
     def simple():
         """
         The function "simple" returns a list of numbers and the value of N.
@@ -24,9 +25,9 @@ class functions():
         :return: two values: `x` and `N`.
         """
         
-        N = 32
+        N = 16
         n = np.arange(N)
-        x = np.exp(1j*n*2*PI/32)
+        x = np.exp(1j*n*2*PI/16)
         return x, N
 
 
@@ -44,8 +45,11 @@ def fourier_series(inputFunc:callable):
     x, N = inputFunc()
     a = np.zeros(N, dtype=complex)
     
+    # The nested for-loop that encapsulates the Discrete Fourier Series
     for k in range(N):
         sum = 0
+        
+        # n in range(N) excludes N, so in mathematical notations it would be "the sum from n=0 to N-1"
         for n in range(N):            
             sum += (x[n] * np.exp(-1j * k * 2*PI/N * n))
         a[k] = 1/N * sum
@@ -56,9 +60,9 @@ def fourier_series(inputFunc:callable):
 def inv_fourier_series(a):
     """
     The function `inv_fourier_series` calculates the inverse discrete Fourier transform of a given
-    sequence `a`.
+    sequence of coefficients `a`.
     
-    :param a: The parameter "a" is a list or array of coefficients representing the Fourier series
+    :param a: The parameter "a" is a list or array of coefficients representing the Fourier coefficients
     :return: two values: "samples" and "x". "samples" is an array containing the indices of the samples,
     and "x" is an array containing the values of the inverse Fourier series.
     """
@@ -67,24 +71,38 @@ def inv_fourier_series(a):
     samples = np.arange(N)
     x = np.zeros(N, dtype=complex)
     
+    # The nested for-loop that encapsulates the Discrete Inverse Fourier Series
     for n in range(N):
         for k in range(N):
             x[n] += a[k] * np.exp(1j * k * 2*PI/N * n)
     
     return samples, x
     
-
-# The `if __name__ == "__main__":` block is used to ensure that the code inside it is only executed
-# when the script is run directly, and not when it is imported as a module.
-if __name__ == "__main__":
+def main(func:callable):
+    # Calculate the Fourier Coefficients a_k and save them in the array 'a'.
+    a = fourier_series(func)
     
-    a = fourier_series(functions.euler)
+    # With the inverse fourier series can be checked if the coefficients are correct, and the original signal can 
+    # get plotted as well.
     samples, x = inv_fourier_series(a)
     
-    plt.plot(samples, x.imag, 'C0', alpha=0.3)
-    plt.plot(samples, x.real, 'C1', alpha=0.3)
-    plt.plot(samples, np.abs(x), 'C2')
+    print(f'\nOriginal signal: {x.real}\n')
+    print(f'Fourier coefficients: {a}\n\n')
+    
+    plt.figure()
+    plt.title(f'Function: {func.__name__}')
+    
+    # Creating plots of the real and imaginary parts of the complex coefficients.  
+    plt.plot(samples, a.imag, 'C0', label='Imag', alpha=0.3)
+    plt.plot(samples, a.real, 'C1', label='Real', alpha=0.3)
+    plt.xlabel('n')
+    plt.ylabel('x[n]')
+    plt.legend()
     plt.show()
+
+if __name__ == "__main__":
+    main(functions.simple)
+    
     
     
     
