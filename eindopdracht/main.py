@@ -11,15 +11,33 @@
 """
 
 import scipy.io
+import numpy as np
 import matplotlib.pyplot as plt
-from signalClass import Signal
+from signalGenerator import Signal
+import DFT
 
-mat = {}
-scipy.io.loadmat("eindopdracht/signaal", mat, appendmat=True)
+# Declaring variables
+PI = np.pi
 
-sig = Signal("Unfiltered Signal")
+sig = Signal(freq=(2*PI)/(50), sample_f=(50)/(2*PI), order=4)
+sin = sig.constructSignal("sine")
 
-plt.figure(sig.title)
-plt.title(sig.title)
-plt.plot(sig.x, sig.y)
+plt.figure("Naked Signal")
+plt.plot(sig.samples, sin)
+
+
+y = np.fft.fft(sin)
+x = np.fft.fftfreq(y.size, (2*PI)/(50))
+
+
+plt.figure("FFT")
+plt.stem(x/PI, abs(y))
+plt.xlim(-1, 1)
 plt.show()
+
+# mat = {}
+# scipy.io.loadmat("eindopdracht/signaal", mat, appendmat=True)
+
+# sig = Signal("Unfiltered Signal", 'signaal.mat')
+# sig.plot()
+# plt.show()
