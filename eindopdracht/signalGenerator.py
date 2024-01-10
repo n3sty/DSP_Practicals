@@ -3,15 +3,14 @@ import numpy as np
 PI = np.pi
 
 class Signal:
-    def __init__(self, sample_f, freq=PI, order=5, phase=PI/4):
+    def __init__(self, freq, samples, offset=0, order=5, phase=PI/4):
         
-        self.samples = np.arange(0, 20000)
-        self.sample_f = sample_f
+        self.samples = np.arange(0, samples, 1/freq)
         
+        self.offset = offset
         self.order = order
         self.phase = phase
         self.f = freq
-        self.type = type
     
     def constructSignal(self, type):
         
@@ -21,8 +20,10 @@ class Signal:
         
         if type == "sine":
             for i in range(self.order):
-                sine = 1/(i+1) * np.sin(self.f * 1/4*(i+1) * self.samples + self.phase)
-                signal = signal * sine
-            # signal = signal * 0.5 * np.sin(1/100 * self.samples)
+                sine = 1/(i+1) * np.sin(self.f * 1/4*(i+1) * self.samples)
+                if i == 0:
+                    signal = signal * sine + self.offset
+                else:
+                    signal = signal + sine
             return signal
         

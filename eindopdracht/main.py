@@ -10,34 +10,36 @@
         RWW Lamain & J Siemerink
 """
 
-import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 from signalGenerator import Signal
-import DFT
 
 # Declaring variables
-PI = np.pi
+PI = np.pi                      
+f = 1                         
+s = 100                          
+samples = int(2*s/f)            
 
-sig = Signal(freq=(2*PI)/(50), sample_f=(50)/(2*PI), order=4)
+# Generating a signal
+sig = Signal(f, samples, order=2, phase=0)
 sin = sig.constructSignal("sine")
 
+# Noise
+# sin = sin + np.random.normal(0, 0.1, len(sin))
+
+# Plotting the signal
 plt.figure("Naked Signal")
+plt.subplot(1, 2, 1)
+plt.grid(True)
 plt.plot(sig.samples, sin)
 
+# Plotting the FFT
+y = np.fft.fft(sin) / len(sin)
+x = np.fft.fftfreq(sig.samples.size, 1/sig.f)
 
-y = np.fft.fft(sin)
-x = np.fft.fftfreq(y.size, (2*PI)/(50))
+# x = np.fft.fftfreq(y.size, 1/f)
 
-
-plt.figure("FFT")
-plt.stem(x/PI, abs(y))
-plt.xlim(-1, 1)
+plt.subplot(1, 2, 2)
+plt.stem(x, abs(y))
+plt.grid(True, which="both")
 plt.show()
-
-# mat = {}
-# scipy.io.loadmat("eindopdracht/signaal", mat, appendmat=True)
-
-# sig = Signal("Unfiltered Signal", 'signaal.mat')
-# sig.plot()
-# plt.show()

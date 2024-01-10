@@ -96,9 +96,11 @@ def opdracht_3f(num, den):
     
     plt.figure()
     plt.title("Custom response")
-    plt.stem(yData)
+    plt.plot(Custom(n), 'g', label='input')
+    plt.stem(yData, label='output')
     plt.xlabel('n')
     plt.ylabel('x[n]')
+    plt.legend()
     
     return yData
 
