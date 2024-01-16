@@ -3,9 +3,9 @@ import numpy as np
 PI = np.pi
 
 class Signal:
-    def __init__(self, sample_f, freq=PI, order=5, phase=0):
+    def __init__(self, sample_f, N, freq=PI, order=5, phase=0):
         
-        self.samples = np.arange(0, 5000)
+        self.samples = np.arange(0, N)
         self.sample_f = sample_f
         
         self.order = order
