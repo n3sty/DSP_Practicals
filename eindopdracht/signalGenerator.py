@@ -8,7 +8,6 @@ class Signal:
         self.samples = np.arange(0, 5000)
         self.sample_f = sample_f
         
-        self.offset = offset
         self.order = order
         self.phase = phase
         self.f = freq
