@@ -11,39 +11,40 @@
 """
 
 import numpy as np
+import os
+import scipy.io
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import signalClass
 
 # Declaring variables
 PI = np.pi
 sampleFreq = 5000 # Hz
-N = 20000 # Samples
-freq = 1/2 # Hz
+N = 4 * sampleFreq # 1/2 periods times sample frequency = number of samples
+freq = 20 # Hz
 gs = gridspec.GridSpec(2, 2)
-f_max = sampleFreq/2 # Hz
 
 
 def constructSignal(type, order, phase=0):
         # Generate signal
         print("Generating signal...")
-        sig = np.zeros(N)
         time = np.arange(N) / sampleFreq
+        sig = np.zeros(N)
         
         if type == "sine":
             for i in range(1, order + 1):
                 sine = 1/i * np.sin(freq*i*2*PI*time + phase)
-                sig = sig + sine
-            # sig = sig * 0.5 * np.sin(1/100 * self.samples)
+                sign = -1 if i % 2 == 0 else 1
+                sig = sig + sine * sign
+            sig = sig * np.sin(2*PI*time)
             print("Signal generated")
             return sig
 
 
-def SigFFT(yData):
+def SigFFT(yData, title, window=False):
     print("Calculating FFT...")
     # Generate signal
     time = np.arange(N) / sampleFreq
-    signal = TriangleWindow(yData)
+    signal = TriangleWindow(yData) if window else yData
     fftSignal = np.fft.fftshift(np.fft.fft(signal) / len(signal))
     magSignal = np.abs(fftSignal)
     phiSignal = np.angle(fftSignal)
@@ -51,11 +52,13 @@ def SigFFT(yData):
     # Generate frequency axis
     freqAxis = np.fft.fftshift(np.fft.fftfreq(len(signal), 1/sampleFreq))
     
+    print(len(magSignal))
+    
     print("Plotting...")
     # Plot signal
-    plt.figure("Signal and its FFT")
+    plt.figure(title)
     plt.subplot(gs[0, :])
-    plt.plot(time, signal, '.-')
+    plt.plot(time, signal, '-', linewidth=0.5)
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
     plt.title("Signal")
@@ -63,11 +66,10 @@ def SigFFT(yData):
     
     # Plot FFT
     plt.subplot(gs[1, 0])
-    plt.stem(freqAxis[freqAxis <= f_max], magSignal[freqAxis <= f_max])
+    plt.stem(freqAxis, magSignal)
     plt.xlabel("Frequency (Hz)")
     plt.ylabel("Magnitude")
     plt.title("FFT")
-    plt.xlim(-1, 1)
     plt.grid(True)
     
     # Plot phase
@@ -81,7 +83,6 @@ def SigFFT(yData):
     print("Plots generated")
     
     plt.tight_layout()  # Add this line to adjust the spacing between subplots
-    plt.show()
 
 
 def TriangleWindow(sig):
@@ -89,15 +90,18 @@ def TriangleWindow(sig):
     window = np.zeros(N)
     window[0:int(N/2)] = np.arange(0, 1, 1/int(N/2))
     window[int(N/2):N] = np.arange(1, 0, -1/int(N/2))
-    
+        
     # Apply window
     sig = sig * window
     
     print("Window applied")
-    
+        
     return sig
 
-sig = signalClass.Signal().y
-# sig = constructSignal("sine", 5, PI/8)
+sig = np.reshape(scipy.io.loadmat(f'{os.path.dirname(os.path.realpath(__file__))}/{"signaal.mat"}')['sig'], 20000)
+# sig = constructSignal("sine", 5, 0.1)
 
-SigFFT(sig)
+# SigFFT(sig, "Windowed",True)
+SigFFT(sig, "Raw", False)
+
+plt.show()
