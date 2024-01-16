@@ -16,7 +16,10 @@ import signalGenerator
 import signalClass
 
 # Declaring variables
-PI = np.pi
+PI = np.pi                      
+f = 1                         
+s = 100                          
+samples = int(2*s/f)            
 
 def SigFFT(yData):
     
@@ -25,7 +28,6 @@ def SigFFT(yData):
     
     plt.figure("Signal")
     plt.plot(xData, yData)
-
 
     yFFT = np.fft.fft(yData) / len(yData)
     xF = np.fft.fftfreq(len(yData), 10)

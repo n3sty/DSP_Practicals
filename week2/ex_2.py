@@ -19,7 +19,7 @@ def SignalTest(alpha, input=None):
 
 
     # Give the figure a distinguishable title
-    plt.figure(f'With alpha: {alpha}')
+    plt.figure(f'With alpha {alpha}')
     
     if type(input) != type(None):
         gc = gridspec.GridSpec(2, 3, hspace=0)
