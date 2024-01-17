@@ -163,7 +163,7 @@ if __name__ == "__main__":
     try:
         sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), "signaal.mat"))['sig'], 20000)
 
-        seperateFigures = True
+        seperateFigures = False
         
         # np.bartlett(N) for triangle, np.hamming(N) for hamming, etc.
         SigFFT(sig, "Rectangular", np.bartlett(N), cutoff)
