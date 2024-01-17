@@ -217,7 +217,7 @@ if __name__ == "__main__":
     try:
         seperateFigures = True
         Filter = Filters()
-        
+        cutoff = 54
         """
         Compute the FFT and plot the signal, windows are useable with the following commands:
                 'bartlett' for triangle, 'hamming' for hamming, etc.
@@ -225,10 +225,8 @@ if __name__ == "__main__":
         Usage of filters is done by addin a filter argument to the SigFFT function:
                 'lowpass' for lowpass filter, 'highpass' for highpass filter
         """
-        time, signal = loadSignal("signaal.mat", 'bartlett', None, sampleRate)
-        SigFFT(time, signal, "Triangle", np.bartlett(len(signal)), cutoff)
-        time, signal = loadSignal("signaal.mat", None, None, sampleRate)
-        SigFFT(time, signal, "Rectangular", None, cutoff)
+        time, signal = loadSignal("signaal.mat", 'hamming', None, 4*sampleRate)
+        SigFFT(time, signal, "Triangle", None, cutoff)
         
         plt.show()
 
