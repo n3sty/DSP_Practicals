@@ -6,13 +6,15 @@ import matplotlib.gridspec as gridspec
 from scipy.signal import spectrogram
 
 # Declaring variables
+seperateFigures = False
 PI = np.pi
 sampleFreq = 5000  # Hz
 N = 4 * sampleFreq  # 1/2 periods times sample frequency = number of samples
 freq = 20  # Hz
-cutoff = 55  # dB
+cutoff = 54.5  # dB, set 0 to disable, set positive to limit the dB range
 gs = gridspec.GridSpec(2, 2)
 
+sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), "signaal.mat"))['sig'], 20000)
 
 def constructSignal(signal_type, order, phase=0):
     """
@@ -44,7 +46,7 @@ def constructSignal(signal_type, order, phase=0):
     return sig
 
 
-def SigFFT(yData, title, window=None, cutoff=0):
+def SigFFT(yData, title, window=None, cutoff=0, fig=None):
     """
     Calculate and plot the Fast Fourier Transform (FFT) of a given signal.
 
@@ -76,49 +78,80 @@ def SigFFT(yData, title, window=None, cutoff=0):
 
 
     # Generating the window
-    plt.figure(title, figsize=(12, 8))
+    if fig != None: 
+        plt.figure(fig)
+    else:
+        plt.figure(title, figsize=(12, 8))
     print("Plotting...")
     
-    # Plotting the signal
-    plt.subplot(gs[0, 0])
-    plt.plot(time, signal, '-', linewidth=0.5)
-    if window is not None:
-        plt.plot(time, window, '--', linewidth=0.5)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Amplitude")
-    plt.title("Signal")
-    plt.grid(True)
-    
-    # Plotting the spectrogram
-    plt.subplot(gs[0, 1])
-    plt.pcolormesh(times, frequencies, 10 * np.log(spectrogramData))
-    plt.ylabel('Frequency [Hz]')
-    plt.xlabel('Time [sec]')
-    plt.title("Spectrogram")
-    plt.colorbar(label= "Intensity (dB)")
-
-    # Plotting the FFT
-    plt.subplot(gs[1, 0])
-
-    # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
-    if cutoff > 0:
-        plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=2)
-        plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
+    if seperateFigures:
+        # Plotting the signal
+        plt.subplot(2, 1, 1)
+        plt.plot(time, signal, '-', linewidth=0.5)
+        if window is not None:
+            plt.plot(time, window, '--', linewidth=2)
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.title("Signal")
+        plt.legend(["Signal", "Window"])
+        plt.grid(True)
+        
+        # Plotting the FFT
+        plt.subplot(2, 1, 2)
+        
+        # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
+        if cutoff > 0:
+            plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=2)
+            plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
+        else:
+            plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=2)
+        
+        plt.xlabel("Frequency (kHz)")
+        plt.ylabel("Magnitude (dB)")
+        plt.title("FFT")
+        plt.grid(True)
     else:
-        plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=2)
-    
-    plt.xlabel("Frequency (kHz)")
-    plt.ylabel("Magnitude (dB)")
-    plt.title("FFT")
-    plt.grid(True)
+        # Plotting the signal
+        plt.subplot(gs[0, 0])
+        plt.plot(time, signal, '-', linewidth=0.5)
+        if window is not None:
+            plt.plot(time, window, '--', linewidth=2)
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.title("Signal")
+        plt.legend(["Signal", "Window"])
+        plt.grid(True)
+        
+        # Plotting the spectrogram
+        plt.subplot(gs[0, 1])
+        plt.pcolormesh(times, frequencies, 10 * np.log(spectrogramData))
+        plt.ylabel('Frequency [Hz]')
+        plt.xlabel('Time [sec]')
+        plt.title("Spectrogram")
+        plt.colorbar(label= "Intensity (dB)")
 
-    # Plotting the phase
-    plt.subplot(gs[1, 1])
-    plt.plot(freqAxis, phiSignal/np.pi, '-', linewidth=0.5)
-    plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Phase (pi * rad)")
-    plt.title("Phase")
-    plt.grid(True)
+        # Plotting the FFT
+        plt.subplot(gs[1, 0])
+
+        # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
+        if cutoff > 0:
+            plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=2)
+            plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
+        else:
+            plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=2)
+        
+        plt.xlabel("Frequency (kHz)")
+        plt.ylabel("Magnitude (dB)")
+        plt.title("FFT")
+        plt.grid(True)
+
+        # Plotting the phase
+        plt.subplot(gs[1, 1])
+        plt.plot(freqAxis, phiSignal/np.pi, '-', linewidth=0.5)
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Phase (pi * rad)")
+        plt.title("Phase")
+        plt.grid(True)
 
     plt.tight_layout()
 
@@ -129,11 +162,11 @@ if __name__ == "__main__":
     print("Starting...")
     try:
         sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), "signaal.mat"))['sig'], 20000)
-    
-        # np.bartlett for triangle, np.hamming for hamming, etc.
-        SigFFT(sig, "Rectangular", None, cutoff)
-        SigFFT(sig, "Bartlett", np.bartlett(N), cutoff)  
-        SigFFT(sig, "Hanning", np.hanning(N), cutoff)
+
+        seperateFigures = True
+        
+        # np.bartlett(N) for triangle, np.hamming(N) for hamming, etc.
+        SigFFT(sig, "Rectangular", np.bartlett(N), cutoff)
         
         print("Done")
         plt.show()
