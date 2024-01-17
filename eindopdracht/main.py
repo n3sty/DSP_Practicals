@@ -10,7 +10,7 @@ PI = np.pi
 sampleFreq = 5000  # Hz
 N = 4 * sampleFreq  # 1/2 periods times sample frequency = number of samples
 freq = 20  # Hz
-cutoff = 55 # dB
+cutoff = 55  # dB
 gs = gridspec.GridSpec(2, 2)
 
 
@@ -44,7 +44,7 @@ def constructSignal(signal_type, order, phase=0):
     return sig
 
 
-def SigFFT(yData, title, window=None):
+def SigFFT(yData, title, window=None, cutoff=0):
     """
     Calculate and plot the Fast Fourier Transform (FFT) of a given signal.
 
@@ -65,13 +65,13 @@ def SigFFT(yData, title, window=None):
     time = np.arange(N) / sampleFreq
     signal = yData * window if window is not None else yData
     
-    fftSignal = np.fft.fftshift(np.fft.rfft(signal) / len(signal))
-    magSignal = np.abs(fftSignal) * 2 / np.sum(window) if window is not None else np.abs(fftSignal) * 2
+    fftSignal = np.fft.fftshift(np.fft.fft(signal) / len(signal))
+    magSignal = np.abs(fftSignal) * 1 / np.sum(window) if window is not None else np.abs(fftSignal) * 2
     dBmagSignal = 20 * np.log10(magSignal / np.max(magSignal))
     phiSignal = np.angle(fftSignal)
     
     frequencies, times, spectrogramData = spectrogram(yData, sampleFreq)
-    freqAxis = np.fft.fftshift(np.fft.rfftfreq(len(signal), 1 / sampleFreq))
+    freqAxis = np.fft.fftshift(np.fft.fftfreq(len(signal), 1 / sampleFreq))
     print("FFT calculated")
 
 
@@ -82,6 +82,8 @@ def SigFFT(yData, title, window=None):
     # Plotting the signal
     plt.subplot(gs[0, 0])
     plt.plot(time, signal, '-', linewidth=0.5)
+    if window is not None:
+        plt.plot(time, window, '--', linewidth=0.5)
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
     plt.title("Signal")
@@ -97,18 +99,24 @@ def SigFFT(yData, title, window=None):
 
     # Plotting the FFT
     plt.subplot(gs[1, 0])
-    plt.plot(freqAxis, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=2)
-    plt.plot(freqAxis, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
-    plt.xlabel("Frequency (Hz)")
+
+    # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
+    if cutoff > 0:
+        plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=2)
+        plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
+    else:
+        plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=2)
+    
+    plt.xlabel("Frequency (kHz)")
     plt.ylabel("Magnitude (dB)")
     plt.title("FFT")
     plt.grid(True)
 
     # Plotting the phase
     plt.subplot(gs[1, 1])
-    plt.stem(freqAxis, phiSignal)
+    plt.plot(freqAxis, phiSignal/np.pi, '-', linewidth=0.5)
     plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Phase (rad)")
+    plt.ylabel("Phase (pi * rad)")
     plt.title("Phase")
     plt.grid(True)
 
@@ -121,8 +129,12 @@ if __name__ == "__main__":
     print("Starting...")
     try:
         sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), "signaal.mat"))['sig'], 20000)
-        SigFFT(sig, "Raw")  # bartlett for triangle, hamming for hamming, etc.
-                
+    
+        # np.bartlett for triangle, np.hamming for hamming, etc.
+        SigFFT(sig, "Rectangular", None, cutoff)
+        SigFFT(sig, "Bartlett", np.bartlett(N), cutoff)  
+        SigFFT(sig, "Hanning", np.hanning(N), cutoff)
+        
         print("Done")
         plt.show()
 
