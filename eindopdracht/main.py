@@ -14,8 +14,23 @@ freq = 20                   # Hz
 cutoff = 54.5               # dB, set 0 to disable, set positive to limit the dB range
 gs = gridspec.GridSpec(2, 2)
 
-# Loading the signal from the .mat file and reshaping it to a 1-dimensional array
-sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), "signaal.mat"))['sig'], 20000)
+def loadSignal(filename: str = None, window = None, filter = None, padding: int = 0) -> np.ndarray:
+    # Loading the signal from the .mat file and reshaping it to a 1-dimensional array
+    sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), filename))['sig'], N)
+    
+    if window == "bartlett":
+        sig = np.bartlett(len(sig)) * sig
+    elif window == "hamming":
+        sig = np.hamming(len(sig)) * sig
+    
+    # !!! Kijk of je niet het frequentiedomein moet filteren ipv het tijdsdomein !!! #
+    if filter is not None:
+        signal = Filter.filter(type=filter, data=signal, cutoff=filterFreq, sampleFreq=sampleRate)
+    
+    sig = np.append(sig, np.zeros(padding)) if padding > 0 else sig
+    time = np.arange(len(sig)) / sampleRate
+    
+    return time, sig
 
 
 class Filters:
@@ -90,36 +105,32 @@ def constructSignal(signal_type, order, phase=0):
     return sig
 
 
-def SigFFT(yData, title, window=None, cutoff=0, fig=None, filter=None):
+def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
     """
     Calculate and plot the Fast Fourier Transform (FFT) of a given signal.
 
     Parameters:
-    - yData (array-like): Input signal data.
+    - time (array-like): Time values corresponding to the signal data.
+    - signal (array-like): Input signal data.
     - title (str): Title for the plot.
     - window (array-like, optional): Window function to apply to the signal. Default is None.
+    - cutoff (float, optional): Cutoff value for plotting the FFT in dB. Default is 0.
+    - fig (int, optional): Figure number for the plot. Default is None.
 
     Returns:
     None
     """
     # Checking the input data for validity
-    if window is not None and not isinstance(window, np.ndarray):
-        raise ValueError("Invalid window type. Please provide a numpy array or None.")
 
     gs = gridspec.GridSpec(2, 2)
 
-    # Calculating the FFT
-    time = np.arange(N) / sampleRate
-    signal = yData * window if window is not None else yData
-    if filter is not None:
-        signal = Filter.filter(type=filter, data=signal, cutoff=filterFreq, sampleFreq=sampleRate)
-    
+    # Calculating the FFT    
     fftSignal = np.fft.fftshift(np.fft.fft(signal) / len(signal))
     magSignal = np.abs(fftSignal) * 1 / np.sum(window) if window is not None else np.abs(fftSignal)
     dBmagSignal = 20 * np.log10(magSignal / np.max(magSignal))
     phiSignal = np.angle(fftSignal)
     
-    frequencies, times, spectrogramData = spectrogram(yData, sampleRate)
+    frequencies, times, spectrogramData = spectrogram(signal, sampleRate)
     freqAxis = np.fft.fftshift(np.fft.fftfreq(len(signal), 1 / sampleRate))
     
     
@@ -180,10 +191,10 @@ def SigFFT(yData, title, window=None, cutoff=0, fig=None, filter=None):
 
         # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
         if cutoff > 0:
-            plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=2)
+            plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=0.5)
             plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
         else:
-            plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=2)
+            plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=0.5)
         
         plt.xlabel("Frequency (kHz)")
         plt.ylabel("Magnitude (dB)")
@@ -204,26 +215,24 @@ def SigFFT(yData, title, window=None, cutoff=0, fig=None, filter=None):
 if __name__ == "__main__":
     print("Starting...")
     try:
-        sig = np.reshape(scipy.io.loadmat(os.path.join(os.path.dirname(os.path.realpath(__file__)), "signaal.mat"))['sig'], 20000)
-        
-        seperateFigures = False
-        
+        seperateFigures = True
         Filter = Filters()
         
         """
         Compute the FFT and plot the signal, windows are useable with the following commands:
-                np.bartlett(N) for triangle, np.hamming(N) for hamming, etc.
+                'bartlett' for triangle, 'hamming' for hamming, etc.
         
         Usage of filters is done by addin a filter argument to the SigFFT function:
                 'lowpass' for lowpass filter, 'highpass' for highpass filter
         """
-        
-        # SigFFT(sig, "Triangle", np.bartlett(N), cutoff)
-        SigFFT(sig, "Rectangular")
+        time, signal = loadSignal("signaal.mat", 'bartlett', None, sampleRate)
+        SigFFT(time, signal, "Triangle", np.bartlett(len(signal)), cutoff)
+        time, signal = loadSignal("signaal.mat", None, None, sampleRate)
+        SigFFT(time, signal, "Rectangular", None, cutoff)
         
         plt.show()
 
     except FileNotFoundError:
         print("Error: 'signaal.mat' file not found.")
     except Exception as e:
-        traceback.print_exc(1)
+        traceback.print_exc(2)
