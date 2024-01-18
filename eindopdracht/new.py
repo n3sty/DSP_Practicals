@@ -5,18 +5,19 @@ from scipy.signal import spectrogram
 
 """
 This script performs signal processing operations on a given signal.
-#TODO make the windows work
-#TODO make the filters work
+#TODO: make the windows work
+#TODO: make the filters work
 """
 
 sampleRate = 5000   # Hz
 N = 20000           # Samples
 cutoff = 100        # Hz
-dBcutoff = 55       # dB
+dBcutoff = 54       # dB
 fig = None
 path = "signaal.mat"
 
-def getSignal(path: str):
+
+def GetSignal(path: str):
     """
     Load the signal from the specified path.
     
@@ -33,9 +34,9 @@ def getSignal(path: str):
     time = np.arange(len(sig)) / sampleRate
     
     return time, sig
-    
 
-def filterSignal(sig: np.ndarray, filter: str, poles: int = 5):
+
+def FilterSignal(sig: np.ndarray, filter: str, poles: int = 5):
     """
     Apply a digital filter to the input signal.
     
@@ -55,7 +56,26 @@ def filterSignal(sig: np.ndarray, filter: str, poles: int = 5):
     return filteredSig
 
 
-def fftSignal(sig: np.ndarray, window: str = None):
+def WindowSignal(sig: np.ndarray, window: str):
+    """
+    Apply a window to the input signal.
+    
+    Args:
+        sig (np.ndarray): The input signal.
+        window (str): The type of window to apply.
+    
+    Returns:
+        np.ndarray: The windowed signal.
+    """
+    if window == "bartlett":
+        return np.bartlett(len(sig)) * sig
+    elif window == "hamming":
+        return np.hamming(len(sig)) * sig
+    else:
+        return sig
+
+
+def FFTSignal(sig: np.ndarray, padding: int = 0, window: str = None):
     """
     Perform FFT on the input signal.
     
@@ -69,7 +89,7 @@ def fftSignal(sig: np.ndarray, window: str = None):
     """
     global sampleRate
     
-    fftSig = np.fft.fftshift(np.fft.fft(sig) / len(sig))
+    fftSig = np.fft.fftshift(np.fft.fft(sig, N + padding) / N)
     magSig = np.abs(fftSig) * 1 / np.sum(window) if window is not None else np.abs(fftSig)
     dBmagSig = 20 * np.log10(magSig / np.max(magSig))
     phiSignal = np.angle(fftSig)
@@ -78,9 +98,9 @@ def fftSignal(sig: np.ndarray, window: str = None):
     freqAxis = np.fft.fftshift(np.fft.fftfreq(len(sig), 1 / sampleRate))
     
     return magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis
-    
 
-def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
+
+def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
     """
     Plot multiple signals on the same figure.
     
@@ -111,7 +131,7 @@ def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str
             plt.plot(x, np.where(y > -dBcutoff, y, -dBcutoff), '-')
             plt.plot(x, np.ones(len(x)) * -dBcutoff, 'r-')
         else:
-            plt.plot(x, y, '-')    
+            plt.plot(x, y, '-')
     elif plottype == 'stem':
         plt.stem(x, y)
     elif plottype == 'pcolormesh':
@@ -127,27 +147,39 @@ def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str
     plt.ylim(ylim)
     plt.grid(grid)
     plt.legend() if legend else None
-     
-     
+
+ 
 def main():
     """
-    The main function of the script.
+    De hoofdfunctie van het script.
     """
+    global fig, path
     
-    time, sig = getSignal(path)
-    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = fftSignal(sig)
+    tijd, sig = GetSignal(path)
+    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
         
-    multiPlot(time, sig, "Signal", "Time (s)", "Amplitude", plottype='plot', loc=221)
-    multiPlot(freqAxis, dBmagSig, "FFT", "Frequency (Hz)", "Magnitude (dB)", plottype='plot', loc=222)
-    multiPlot(sTime, sFreq, "Spectrogram", "Time (s)", "Frequency (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    multiPlot(freqAxis, phiSignal, "Phase", "Frequency (Hz)", "Phase (rad)", plottype='scatter', loc=224)
+    MultiPlot(tijd, sig, "Signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=221)
+    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=222)
+    MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+    
+    plt.tight_layout()
+    
+    fig = None
+    
+    sig = WindowSignal(sig, "hamming")
+    
+    MultiPlot(tijd, sig, "Gefilterd signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=221)
+    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=222)
+    MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
     
     plt.tight_layout()
     plt.show()
     
     return 0
-    
-    
+
+
 if __name__ == "__main__":
     try:
         main()
