@@ -1,20 +1,12 @@
 import os, sys, traceback, scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 from scipy.signal import spectrogram
 
 """
-Variables
-
-Functions:
-    - Getting a signal (class maybe)
-    - Function for filters
-    - Function for windows
-    - Function for generating FFT data
-    - Function for plotting
-
-Main and errorhandling.
+This script performs signal processing operations on a given signal.
+#TODO make the windows work
+#TODO make the filters work
 """
 
 sampleRate = 5000   # Hz
@@ -26,7 +18,13 @@ path = "signaal.mat"
 
 def getSignal(path: str):
     """
+    Load the signal from the specified path.
     
+    Args:
+        path (str): The path to the signal file.
+    
+    Returns:
+        tuple: A tuple containing the time array and the signal array.
     """
    
     dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
@@ -39,7 +37,15 @@ def getSignal(path: str):
 
 def filterSignal(sig: np.ndarray, filter: str, poles: int = 5):
     """
+    Apply a digital filter to the input signal.
     
+    Args:
+        sig (np.ndarray): The input signal.
+        filter (str): The type of filter to apply.
+        poles (int, optional): The number of poles for the filter. Defaults to 5.
+    
+    Returns:
+        np.ndarray: The filtered signal.
     """
     global sampleRate, cutoff
     
@@ -51,7 +57,15 @@ def filterSignal(sig: np.ndarray, filter: str, poles: int = 5):
 
 def fftSignal(sig: np.ndarray, window: str = None):
     """
+    Perform FFT on the input signal.
     
+    Args:
+        sig (np.ndarray): The input signal.
+        window (str, optional): The type of window to apply. Defaults to None.
+    
+    Returns:
+        tuple: A tuple containing the magnitude spectrum, dB magnitude spectrum, phase spectrum,
+               spectrogram frequency axis, spectrogram time axis, spectrogram, and frequency axis.
     """
     global sampleRate
     
@@ -68,7 +82,21 @@ def fftSignal(sig: np.ndarray, window: str = None):
 
 def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
     """
+    Plot multiple signals on the same figure.
     
+    Args:
+        x (np.ndarray): The x-axis values.
+        y (np.ndarray): The y-axis values.
+        title (str): The title of the plot.
+        xlabel (str): The label for the x-axis.
+        ylabel (str): The label for the y-axis.
+        z (np.ndarray, optional): The z-axis values for 3D plots. Defaults to None.
+        plottype (str, optional): The type of plot to create. Defaults to 'plot'.
+        loc (int, optional): The location of the subplot. Defaults to 111.
+        xlim (tuple, optional): The limits for the x-axis. Defaults to None.
+        ylim (tuple, optional): The limits for the y-axis. Defaults to None.
+        grid (bool, optional): Whether to show grid lines. Defaults to True.
+        legend (bool, optional): Whether to show the legend. Defaults to False.
     """
     global fig
     
@@ -103,7 +131,7 @@ def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str
      
 def main():
     """
-    
+    The main function of the script.
     """
     
     time, sig = getSignal(path)
