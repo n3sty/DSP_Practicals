@@ -21,6 +21,7 @@ sampleRate = 5000   # Hz
 N = 20000           # Samples
 cutoff = 100        # Hz
 dBcutoff = 55       # dB
+fig = None
 path = "signaal.mat"
 
 def getSignal(path: str):
@@ -46,7 +47,8 @@ def filterSignal(sig: np.ndarray, filter: str, poles: int = 5):
     filteredSig = scipy.signal.sosfiltfilt(sos, sig)
     
     return filteredSig
-    
+
+
 def fftSignal(sig: np.ndarray, window: str = None):
     """
     
@@ -58,19 +60,47 @@ def fftSignal(sig: np.ndarray, window: str = None):
     dBmagSig = 20 * np.log10(magSig / np.max(magSig))
     phiSignal = np.angle(fftSig)
     
-    sFreq, sTime, sSpec = spectrogram(sig, sampleRate, nperseg=sampleRate, noverlap=sampleRate - 1, window=window if window is not None else 'boxcar', mode='magnitude')
+    sFreq, sTime, sSpec = spectrogram(sig, sampleRate)
     freqAxis = np.fft.fftshift(np.fft.fftfreq(len(sig), 1 / sampleRate))
     
     return magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis
     
 
-def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, loc: int = None, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
+def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = None, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
     """
     
     """
+    global fig
     
-    plt.subplot(loc) if loc is not None else plt.figure(title, figsize=(12, 8))    
-    plt.plot(x, y)
+    if fig is None or loc is not None:
+        if loc is None:
+            fig = plt.figure(figsize=(16, 8))
+        else:
+            fig = plt.figure(figsize=(int(str(loc)[1])*6, int(str(loc)[0])*4))
+            plt.subplot(loc)
+    
+    
+    # if loc is None and  fig is None:
+    #     fig = plt.figure(figsize=(16, 8))
+    # elif loc is not None and fig is None:
+    #     fig = plt.figure(title, figsize=(int(str(loc)[1])*6, int(str(loc)[0])*4)) 
+    
+    # plt.subplot(loc) if loc is not None else None
+    
+    if plottype == 'plot':
+        if dBcutoff > 0 and title == "FFT":
+            plt.plot(x, np.where(y > -dBcutoff, y, -dBcutoff), '-')
+            plt.plot(x, np.ones(len(x)) * -dBcutoff, 'r-')
+        else:
+            plt.plot(x, y, '-')    
+    elif plottype == 'stem':
+        plt.stem(x, y)
+    elif plottype == 'pcolormesh':
+        plt.pcolormesh(x, y, 10 * np.log(z))
+        plt.colorbar(label= "Intensity (dB)")
+    elif plottype == 'scatter':
+        plt.scatter(x, y, linewidths=0.1, s=1)
+        
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -88,7 +118,10 @@ def main():
     time, sig = getSignal(path)
     magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = fftSignal(sig)
         
-    multiPlot(time, sig, "Signal", "Time (s)", "Amplitude")
+    multiPlot(time, sig, "Signal", "Time (s)", "Amplitude", plottype='plot')
+    multiPlot(freqAxis, dBmagSig, "FFT", "Frequency (Hz)", "Magnitude (dB)", plottype='plot', loc=212)
+    multiPlot(sTime, sFreq, "Spectrogram", "Time (s)", "Frequency (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    multiPlot(freqAxis, phiSignal, "Phase", "Frequency (Hz)", "Phase (rad)", plottype='scatter', loc=224)
     
     plt.tight_layout()
     plt.show()
@@ -101,5 +134,5 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print("An error occured: " + str(e))
-        traceback.print_exc(file=sys.stdout, limit=2)
+        traceback.print_exc(file=sys.stdout)
         sys.exit(1)
