@@ -11,8 +11,6 @@ This script performs signal processing operations on a given signal.
 
 sampleRate = 5000   # Hz
 N = 20000           # Samples
-cutoff = 100        # Hz
-dBcutoff = 54       # dB
 fig = None
 path = "signaal.mat"
 
@@ -95,12 +93,12 @@ def FFTSignal(sig: np.ndarray, padding: int = 0, window: str = None):
     phiSignal = np.angle(fftSig)
     
     sFreq, sTime, sSpec = spectrogram(sig, sampleRate)
-    freqAxis = np.fft.fftshift(np.fft.fftfreq(len(sig), 1 / sampleRate))
+    freqAxis = np.fft.fftshift(np.fft.fftfreq(len(fftSig), 1 / sampleRate))
     
     return magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis
 
 
-def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
+def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, dBcutoff: int = 0, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
     """
     Plot multiple signals on the same figure.
     
@@ -147,6 +145,9 @@ def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str
     plt.ylim(ylim)
     plt.grid(grid)
     plt.legend() if legend else None
+    
+    plt.tight_layout()
+
 
  
 def main():
@@ -155,26 +156,62 @@ def main():
     """
     global fig, path
     
-    tijd, sig = GetSignal(path)
-    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
-        
-    MultiPlot(tijd, sig, "Signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=221)
-    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=222)
-    MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+    cutoff = 750        # Hz
+    dBcutoff = 0       # dB
+    window = 'hamming'  # None, 'bartlett', 'hamming'
     
-    plt.tight_layout()
+    # # RAUW SIGNAAL, GEEN BEWERKINGEN
+    # tijd, sig = GetSignal(path)
+    # magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
+        
+    # MultiPlot(tijd, sig, "Signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
+    # MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=122)
+    # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+    
+    # fig = None
+    
+    # # GEFILTERD SIGNAAL
+    # tijd, sig = GetSignal(path)
+    # sig = FilterSignal(sig, "lowpass", poles=3)
+    # magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
+    
+    # MultiPlot(tijd, sig, "Gefilterd signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
+    # MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=122)
+    # # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    # # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
     
     fig = None
     
-    sig = WindowSignal(sig, "hamming")
+    # GEWINDOWED SIGNAAL 
+    tijd, sig = GetSignal(path)
+    # sig = WindowSignal(sig, window)
+    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
     
-    MultiPlot(tijd, sig, "Gefilterd signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=221)
-    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=222)
-    MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+    MultiPlot(tijd, sig, "Gewindowed signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
+    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=122)
+    # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
     
-    plt.tight_layout()
+    fig = None
+    
+    # GEPAD SIGNAAL 
+    tijd, sig = GetSignal(path)
+    # sig = WindowSignal(sig, window)
+    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig, padding=100000)
+    
+    MultiPlot(tijd, sig, "Gepad & gewindowed signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
+    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=122)
+    
+    # # GEWINDOWED, GEFILTERD SIGNAAL, IN DIE VOLGORDE
+    # sig = FilterSignal(sig, "lowpass", poles=3)
+    # magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
+    
+    # MultiPlot(tijd, sig, "Gefilterd & gewindowed signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
+    # MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=122)
+    # # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    # # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+
     plt.show()
     
     return 0
