@@ -66,26 +66,17 @@ def fftSignal(sig: np.ndarray, window: str = None):
     return magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis
     
 
-def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = None, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
+def multiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
     """
     
     """
     global fig
     
-    if fig is None or loc is not None:
-        if loc is None:
-            fig = plt.figure(figsize=(16, 8))
-        else:
-            fig = plt.figure(figsize=(int(str(loc)[1])*6, int(str(loc)[0])*4))
-            plt.subplot(loc)
+    if fig is None:
+        fig = plt.figure(title, figsize=(6*int(str(loc)[1]), 4*int(str(loc)[0])))
+        
+    plt.subplot(loc)
     
-    
-    # if loc is None and  fig is None:
-    #     fig = plt.figure(figsize=(16, 8))
-    # elif loc is not None and fig is None:
-    #     fig = plt.figure(title, figsize=(int(str(loc)[1])*6, int(str(loc)[0])*4)) 
-    
-    # plt.subplot(loc) if loc is not None else None
     
     if plottype == 'plot':
         if dBcutoff > 0 and title == "FFT":
@@ -118,8 +109,8 @@ def main():
     time, sig = getSignal(path)
     magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = fftSignal(sig)
         
-    multiPlot(time, sig, "Signal", "Time (s)", "Amplitude", plottype='plot')
-    multiPlot(freqAxis, dBmagSig, "FFT", "Frequency (Hz)", "Magnitude (dB)", plottype='plot', loc=212)
+    multiPlot(time, sig, "Signal", "Time (s)", "Amplitude", plottype='plot', loc=221)
+    multiPlot(freqAxis, dBmagSig, "FFT", "Frequency (Hz)", "Magnitude (dB)", plottype='plot', loc=222)
     multiPlot(sTime, sFreq, "Spectrogram", "Time (s)", "Frequency (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
     multiPlot(freqAxis, phiSignal, "Phase", "Frequency (Hz)", "Phase (rad)", plottype='scatter', loc=224)
     
