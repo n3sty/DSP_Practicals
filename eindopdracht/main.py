@@ -115,7 +115,7 @@ def constructSignal(signal_type, order, sampleRate, padding=0, phase=0):
     return time, sig
 
 
-def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
+def SigFFT(time, signal, title, padding=0, window=None, cutoff=0, fig=None):
     """
     Calculate and plot the Fast Fourier Transform (FFT) of a given signal.
 
@@ -137,13 +137,13 @@ def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
     signal = signal * window if window is not None else signal
 
     # Calculating the FFT    
-    fftSignal = np.fft.fftshift(np.fft.fft(signal) / len(signal))
-    magSignal = np.abs(fftSignal)
+    fftSignal = np.fft.fftshift(np.fft.fft(signal, len(signal) + padding) / len(signal))
+    magSignal = np.abs(fftSignal) * N / np.sum(window) if window is not None else np.abs(fftSignal)
     dBmagSignal = 20 * np.log10(magSignal / np.max(magSignal))
     phiSignal = np.angle(fftSignal)
     
     frequencies, times, spectrogramData = spectrogram(signal, sampleRate)
-    freqAxis = np.fft.fftshift(np.fft.fftfreq(len(signal), 1 / sampleRate))
+    freqAxis = np.fft.fftshift(np.fft.fftfreq(len(fftSignal), 1 / sampleRate))
     
     
     if seperateFigures:
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         
         fig = plt.figure("Simpel signaal met zero-padding", figsize=(10, 4))
         time, signal = constructSignal("sine", 2, sampleRate, 100000, 0)
-        SigFFT(time, signal, "Simpel signaal", fig=fig)
+        SigFFT(time, signal, "Simpel signaal", padding=100000, fig=fig)
         
         fig = plt.figure("Simpel signaal met ruis en een low-pass filter", figsize=(10, 4))
         time, signal = constructSignal("sine", 2, sampleRate, 0)
