@@ -1,4 +1,8 @@
+from asyncio.constants import FLOW_CONTROL_HIGH_WATER_SSL_READ
 import os, sys, traceback, scipy.io
+from matplotlib import figure
+from random import sample
+from tkinter import font
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -10,7 +14,7 @@ seperateFigures = False     # Option to plot the signal and FFT in seperate figu
 sampleRate = 5000           # Hz
 filterFreq = 100            # Hz
 N = 4 * sampleRate          # 1/2 periods times sample frequency = number of samples
-freq = 20                   # Hz
+freq = 2                   # Hz
 cutoff = 54.5               # dB, set 0 to disable, set positive to limit the dB range
 gs = gridspec.GridSpec(2, 2)
 
@@ -77,7 +81,8 @@ class Filters:
         filteredData = scipy.signal.sosfiltfilt(sos, data)
         return filteredData
 
-def constructSignal(signal_type, order, phase=0):
+
+def constructSignal(signal_type, order, sampleRate, padding=0, phase=0):
     """
     Construct a signal of a given type, order, and phase.
 
@@ -101,8 +106,13 @@ def constructSignal(signal_type, order, phase=0):
         sign = -1 if i % 2 == 0 else 1
         sig = sig + sine * sign
 
-    sig = sig * np.sin(2 * PI * time)
-    return sig
+    # sig = sig * np.sin(2 * PI * time)
+    
+    if padding:
+        sig = np.append(sig, np.zeros(padding))
+        time = np.append(time, (np.arange(padding) / sampleRate))
+    
+    return time, sig
 
 
 def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
@@ -122,11 +132,13 @@ def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
     """
     # Checking the input data for validity
 
-    gs = gridspec.GridSpec(2, 2)
+    gs = gridspec.GridSpec(1, 2)
+
+    signal = signal * window if window is not None else signal
 
     # Calculating the FFT    
     fftSignal = np.fft.fftshift(np.fft.fft(signal) / len(signal))
-    magSignal = np.abs(fftSignal) * 1 / np.sum(window) if window is not None else np.abs(fftSignal)
+    magSignal = np.abs(fftSignal)
     dBmagSignal = 20 * np.log10(magSignal / np.max(magSignal))
     phiSignal = np.angle(fftSignal)
     
@@ -140,10 +152,10 @@ def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
         plt.plot(time, signal, '-', linewidth=0.5)
         if window is not None:
             plt.plot(time, window, '--', linewidth=2)
-        plt.xlabel("Time (s)")
+        plt.xlabel("Tijd (s)")
         plt.ylabel("Amplitude")
-        plt.title("Signal")
-        plt.legend(["Signal", "Window"])
+        plt.title("Signaal")
+        plt.legend(["Signaal", "Window"])
         plt.grid(True)
         
         # Plotting the FFT
@@ -151,63 +163,51 @@ def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
         
         # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
         if cutoff > 0:
-            plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=0.5)
-            plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
+            plt.plot(freqAxis, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=0.5)
+            plt.plot(freqAxis, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
         else:
-            plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=0.5)
+            plt.plot(freqAxis, magSignal, '-', linewidth=0.5)
         
-        plt.xlabel("Frequency (kHz)")
-        plt.ylabel("Magnitude (dB)")
-        plt.title("FFT")
+        plt.xlabel("Frequentie (Hz)")
+        plt.ylabel("Intensiteit (dB)")
+        plt.title("Amplitude spectrum")
         plt.grid(True)
     else:
         
         if fig is None:
-            fig = plt.figure(title, figsize=(12, 9))
+            fig = plt.figure(title, figsize=(10, 3))
         else:
             plt.figure(fig)
         
         # Plotting the signal
         plt.subplot(gs[0, 0])
-        plt.plot(time, signal, '-', linewidth=0.5)
+        plt.plot(time, signal, '-')
         if window is not None:
             plt.plot(time, window, '--', linewidth=2)
-        plt.xlabel("Time (s)")
+        plt.xlabel("Tijd (s)")
         plt.ylabel("Amplitude")
-        plt.title("Signal")
-        plt.legend(["Signal", "Window"])
-        plt.grid(True)
+        plt.title("Signaal", fontweight='bold')
+        # plt.xlim(0, 1)
+        # plt.legend(["Signaal", "Window"])
+        plt.grid(False)
         
-        # Plotting the spectrogram
-        plt.subplot(gs[0, 1])
-        plt.pcolormesh(times, frequencies, 10 * np.log(spectrogramData))
-        plt.ylabel('Frequency [Hz]')
-        plt.xlabel('Time [sec]')
-        plt.title("Spectrogram")
-        plt.colorbar(label= "Intensity (dB)")
 
         # Plotting the FFT
-        plt.subplot(gs[1, 0])
+        plt.subplot(gs[0, 1])
 
         # Plot the signal in dB, but only up to the cutoff if the cutoff is defined
         if cutoff > 0:
-            plt.plot(freqAxis / 1000, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-', linewidth=0.5)
-            plt.plot(freqAxis / 1000, np.ones(len(freqAxis)) * -cutoff, 'r-', linewidth=0.5)
+            plt.plot(freqAxis, np.where(dBmagSignal > -cutoff, dBmagSignal, -cutoff), '-')
+            plt.plot(freqAxis, np.ones(len(freqAxis)) * -cutoff, 'r-')
         else:
-            plt.plot(freqAxis / 1000, dBmagSignal, '-', linewidth=0.5)
+            plt.plot(freqAxis, magSignal, '-')
         
-        plt.xlabel("Frequency (kHz)")
-        plt.ylabel("Magnitude (dB)")
-        plt.title("FFT")
-        plt.grid(True)
-
-        # Plotting the phase
-        plt.subplot(gs[1, 1])
-        plt.plot(freqAxis, phiSignal/np.pi, '-', linewidth=0.5)
-        plt.xlabel("Frequency (Hz)")
-        plt.ylabel("Phase (pi * rad)")
-        plt.title("Phase")
-        plt.grid(True)
+        plt.xlabel("Frequentie (Hz)")
+        plt.ylabel("Amplitude")
+        plt.xlim(-20, 20)
+        plt.title("Amplitude spectrum", fontweight='bold')
+        plt.grid(False)
+        
 
     plt.tight_layout()
 
@@ -215,9 +215,10 @@ def SigFFT(time, signal, title, window=None, cutoff=0, fig=None):
 if __name__ == "__main__":
     print("Starting...")
     try:
-        seperateFigures = True
+        seperateFigures = False
         Filter = Filters()
-        cutoff = 54
+        cutoff = 0
+        sampleRate = 5000
         """
         Compute the FFT and plot the signal, windows are useable with the following commands:
                 'bartlett' for triangle, 'hamming' for hamming, etc.
@@ -225,9 +226,25 @@ if __name__ == "__main__":
         Usage of filters is done by addin a filter argument to the SigFFT function:
                 'lowpass' for lowpass filter, 'highpass' for highpass filter
         """
-        time, signal = loadSignal("signaal.mat", 'hamming', None, 4*sampleRate)
-        SigFFT(time, signal, "Triangle", None, cutoff)
+
+        fig = plt.figure("Simpel signaal", figsize=(10, 4))
+        time, signal = constructSignal("sine", 2, sampleRate, 0)
+        SigFFT(time, signal, "Simpel signaal", fig=fig)
         
+        fig = plt.figure("Simpel signaal met zero-padding", figsize=(10, 4))
+        time, signal = constructSignal("sine", 2, sampleRate, 100000, 0)
+        SigFFT(time, signal, "Simpel signaal", fig=fig)
+        
+        fig = plt.figure("Simpel signaal met ruis en een low-pass filter", figsize=(10, 4))
+        time, signal = constructSignal("sine", 2, sampleRate, 0)
+        signal = signal + np.random.normal(0, 1, len(signal))
+        signal = Filter.filter(type="lowpass", data=signal, cutoff=20, sampleFreq=sampleRate)
+        SigFFT(time, signal, "Simpel signaal", fig=fig)
+
+        
+        fig = plt.figure("Simpel signaal met driekhoek-window", figsize=(10, 4))
+        time, signal = constructSignal("sine", 2, sampleRate, 0)
+        SigFFT(time, signal, "Simpel signaal", window=np.bartlett(N), cutoff=cutoff, fig=fig)
         plt.show()
 
     except FileNotFoundError:

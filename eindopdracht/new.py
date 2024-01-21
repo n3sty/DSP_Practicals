@@ -1,29 +1,30 @@
+from cProfile import label
 import os, sys, traceback, scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import spectrogram
 
 """
-This script performs signal processing operations on a given signal.
-#TODO: make the windows work
-#TODO: make the filters work
+Dit script voert signaalverwerkingsbewerkingen uit op een gegeven signaal.
+Auteur: Job Siemerink
+Datum: 22 December 2023
 """
 
 sampleRate = 5000   # Hz
 N = 20000           # Samples
-fig = None
-path = "signaal.mat"
+fig = None          # Figure object
+path = "signaal.mat"# Path naar het signaalbestand
 
 
 def GetSignal(path: str):
     """
-    Load the signal from the specified path.
+    Laad het signaal van het opgegeven pad.
     
     Args:
-        path (str): The path to the signal file.
+        path (str): Het pad naar het signaalbestand.
     
     Returns:
-        tuple: A tuple containing the time array and the signal array.
+        tuple: Een tuple met het tijdsarray en het signaalarray.
     """
    
     dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
@@ -36,15 +37,15 @@ def GetSignal(path: str):
 
 def FilterSignal(sig: np.ndarray, filter: str, poles: int = 5):
     """
-    Apply a digital filter to the input signal.
+    Pas een digitaal filter toe op het invoersignaal.
     
     Args:
-        sig (np.ndarray): The input signal.
-        filter (str): The type of filter to apply.
-        poles (int, optional): The number of poles for the filter. Defaults to 5.
+        sig (np.ndarray): Het invoersignaal.
+        filter (str): Het type filter dat moet worden toegepast.
+        poles (int, optioneel): Het aantal polen voor het filter. Standaard is 5.
     
     Returns:
-        np.ndarray: The filtered signal.
+        np.ndarray: Het gefilterde signaal.
     """
     global sampleRate, cutoff
     
@@ -56,14 +57,14 @@ def FilterSignal(sig: np.ndarray, filter: str, poles: int = 5):
 
 def WindowSignal(sig: np.ndarray, window: str):
     """
-    Apply a window to the input signal.
+    Pas een venster toe op het invoersignaal.
     
     Args:
-        sig (np.ndarray): The input signal.
-        window (str): The type of window to apply.
+        sig (np.ndarray): Het invoersignaal.
+        window (str): Het type venster dat moet worden toegepast.
     
     Returns:
-        np.ndarray: The windowed signal.
+        np.ndarray: Het gevensterde signaal.
     """
     if window == "bartlett":
         return np.bartlett(len(sig)) * sig
@@ -75,15 +76,15 @@ def WindowSignal(sig: np.ndarray, window: str):
 
 def FFTSignal(sig: np.ndarray, padding: int = 0, window: str = None):
     """
-    Perform FFT on the input signal.
+    Voer FFT uit op het invoersignaal.
     
     Args:
-        sig (np.ndarray): The input signal.
-        window (str, optional): The type of window to apply. Defaults to None.
+        sig (np.ndarray): Het invoersignaal.
+        window (str, optioneel): Het type venster dat moet worden toegepast. Standaard is None.
     
     Returns:
-        tuple: A tuple containing the magnitude spectrum, dB magnitude spectrum, phase spectrum,
-               spectrogram frequency axis, spectrogram time axis, spectrogram, and frequency axis.
+        tuple: Een tuple met het magnitude spectrum, dB magnitude spectrum, fase spectrum,
+               spectrogram frequentie-as, spectrogram tijd-as, spectrogram en frequentie-as.
     """
     global sampleRate
     
@@ -92,29 +93,29 @@ def FFTSignal(sig: np.ndarray, padding: int = 0, window: str = None):
     dBmagSig = 20 * np.log10(magSig / np.max(magSig))
     phiSignal = np.angle(fftSig)
     
-    sFreq, sTime, sSpec = spectrogram(sig, sampleRate)
+    sFreq, sTime, sSpec= spectrogram(sig, fs=sampleRate)
     freqAxis = np.fft.fftshift(np.fft.fftfreq(len(fftSig), 1 / sampleRate))
     
     return magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis
 
 
-def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, dBcutoff: int = 0, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False):
+def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str, dBcutoff: int = 0, z: np.ndarray = None, plottype: str = 'plot', loc: int = 111, xlim: tuple = None, ylim: tuple = None, grid: bool = True, legend: bool = False, legend_label: str = None):
     """
-    Plot multiple signals on the same figure.
+    Plot meerdere signalen op dezelfde figuur.
     
     Args:
-        x (np.ndarray): The x-axis values.
-        y (np.ndarray): The y-axis values.
-        title (str): The title of the plot.
-        xlabel (str): The label for the x-axis.
-        ylabel (str): The label for the y-axis.
-        z (np.ndarray, optional): The z-axis values for 3D plots. Defaults to None.
-        plottype (str, optional): The type of plot to create. Defaults to 'plot'.
-        loc (int, optional): The location of the subplot. Defaults to 111.
-        xlim (tuple, optional): The limits for the x-axis. Defaults to None.
-        ylim (tuple, optional): The limits for the y-axis. Defaults to None.
-        grid (bool, optional): Whether to show grid lines. Defaults to True.
-        legend (bool, optional): Whether to show the legend. Defaults to False.
+        x (np.ndarray): De waarden voor de x-as.
+        y (np.ndarray): De waarden voor de y-as.
+        title (str): De titel van de plot.
+        xlabel (str): Het label voor de x-as.
+        ylabel (str): Het label voor de y-as.
+        z (np.ndarray, optioneel): De waarden voor de z-as voor 3D-plots. Standaard is None.
+        plottype (str, optioneel): Het type plot dat gemaakt moet worden. Standaard is 'plot'.
+        loc (int, optioneel): De locatie van de subplot. Standaard is 111.
+        xlim (tuple, optioneel): De limieten voor de x-as. Standaard is None.
+        ylim (tuple, optioneel): De limieten voor de y-as. Standaard is None.
+        grid (bool, optioneel): Of er gridlijnen moeten worden weergegeven. Standaard is True.
+        legend (bool, optioneel): Of de legenda moet worden weergegeven. Standaard is False.
     """
     global fig
     
@@ -125,29 +126,28 @@ def MultiPlot(x: np.ndarray, y: np.ndarray, title: str, xlabel: str, ylabel: str
     
     
     if plottype == 'plot':
-        if dBcutoff > 0 and title == "FFT":
-            plt.plot(x, np.where(y > -dBcutoff, y, -dBcutoff), '-')
-            plt.plot(x, np.ones(len(x)) * -dBcutoff, 'r-')
+        if dBcutoff > 0:
+            plt.plot(x, np.where(y > -dBcutoff, y, -dBcutoff), '-', label=legend_label)
+            plt.plot(x, np.ones(len(x)) * -dBcutoff, 'k-')
         else:
-            plt.plot(x, y, '-')
+            plt.plot(x, y, '-', label=legend_label)
     elif plottype == 'stem':
-        plt.stem(x, y)
+        plt.stem(x, y, label=legend_label)
     elif plottype == 'pcolormesh':
-        plt.pcolormesh(x, y, 10 * np.log(z))
+        plt.pcolormesh(x, y, 10 * np.log(z), shading='auto')
         plt.colorbar(label= "Intensity (dB)")
     elif plottype == 'scatter':
-        plt.scatter(x, y, linewidths=0.1, s=1)
+        plt.scatter(x, y, linewidths=0.1, s=1, label=legend_label)
         
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.title(title, fontdict={'fontsize': 14, 'fontweight': 'bold'})
+    plt.xlabel(xlabel, fontdict={'fontsize': 14})
+    plt.ylabel(ylabel, fontdict={'fontsize': 14})
     plt.xlim(xlim)
     plt.ylim(ylim)
     plt.grid(grid)
     plt.legend() if legend else None
     
     plt.tight_layout()
-
 
  
 def main():
@@ -157,61 +157,38 @@ def main():
     global fig, path
     
     cutoff = 750        # Hz
-    dBcutoff = 0       # dB
+    dBcutoff = 53       # dB
     window = 'hamming'  # None, 'bartlett', 'hamming'
     
-    # # RAUW SIGNAAL, GEEN BEWERKINGEN
-    # tijd, sig = GetSignal(path)
-    # magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
-        
-    # MultiPlot(tijd, sig, "Signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
-    # MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=122)
-    # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+    # Maken van verschillende plots
+    tijd, sig = GetSignal(path)    
     
-    # fig = None
     
-    # # GEFILTERD SIGNAAL
-    # tijd, sig = GetSignal(path)
-    # sig = FilterSignal(sig, "lowpass", poles=3)
-    # magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
+    # Plot die het signaal weergeeft samen met alle mogelijke plots uit dit script
+    fig = None
+    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig, padding=1000000)
+    MultiPlot(tijd, sig, "Signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=221)
+    MultiPlot(freqAxis, dBmagSig, "Amplitude spectrum", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=222)
+    MultiPlot(sTime, sFreq, "Spectrogram", "Frequentie (Hz)", "Tijd (s)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
+    MultiPlot(freqAxis, phiSignal, "Fase spectrum", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224, grid=False)
     
-    # MultiPlot(tijd, sig, "Gefilterd signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
-    # MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=122)
-    # # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    # # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
+    
+    
+    # Plot die het amplitude spectrum van het signaal weergeeft en vergelijkt tussen padding en geen padding.
+    fig = None
+    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig, padding=1000000)
+    MultiPlot(freqAxis, dBmagSig, "Amplitude spectrum", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=121, legend=True, legend_label="Met padding")
+    MultiPlot(freqAxis, dBmagSig, "Ingezoomed spectrum", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=122, xlim=(498, 502), ylim=(-50, 0), legend=True, legend_label="Met padding")
+    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)    
+    MultiPlot(freqAxis, dBmagSig, "Amplitude spectrum", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=121, legend=True, legend_label="Zonder padding")
+    MultiPlot(freqAxis, dBmagSig, "Ingezoomed spectrum", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=122, xlim=(498, 502), ylim=(-50, 0), legend=True, legend_label="Zonder padding")
+    
     
     fig = None
+     
     
-    # GEWINDOWED SIGNAAL 
-    tijd, sig = GetSignal(path)
-    # sig = WindowSignal(sig, window)
-    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
     
-    MultiPlot(tijd, sig, "Gewindowed signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
-    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=122)
-    # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
     
-    fig = None
-    
-    # GEPAD SIGNAAL 
-    tijd, sig = GetSignal(path)
-    # sig = WindowSignal(sig, window)
-    magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig, padding=100000)
-    
-    MultiPlot(tijd, sig, "Gepad & gewindowed signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
-    MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", dBcutoff=dBcutoff, plottype='plot', loc=122)
-    
-    # # GEWINDOWED, GEFILTERD SIGNAAL, IN DIE VOLGORDE
-    # sig = FilterSignal(sig, "lowpass", poles=3)
-    # magSig, dBmagSig, phiSignal, sFreq, sTime, sSpec, freqAxis = FFTSignal(sig)
-    
-    # MultiPlot(tijd, sig, "Gefilterd & gewindowed signaal", "Tijd (s)", "Amplitude", plottype='plot', loc=121)
-    # MultiPlot(freqAxis, dBmagSig, "FFT", "Frequentie (Hz)", "Magnitude (dB)", plottype='plot', loc=122)
-    # # MultiPlot(sTime, sFreq, "Spectrogram", "Tijd (s)", "Frequentie (Hz)", z=sSpec, plottype='pcolormesh', loc=223, grid=False)
-    # # MultiPlot(freqAxis, phiSignal, "Fasediagram", "Frequentie (Hz)", "Fase (rad)", plottype='scatter', loc=224)
-
     plt.show()
     
     return 0
